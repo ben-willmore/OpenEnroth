@@ -126,6 +126,9 @@ class OpenGLRenderer : public BaseRenderer {
     virtual void beginOverlays() override;
     virtual void endOverlays() override;
 
+    void initGLCursor();
+    void drawGLCursor() override;
+
  protected:
     virtual void DoRenderBillboards_D3D() override;
     void SetBillboardBlendOptions(RenderBillboardD3D::OpacityType a1);
@@ -220,6 +223,9 @@ class OpenGLRenderer : public BaseRenderer {
     int fogend{};
 
     float gamma{};
+
+    bool use_gl_cursor;
+    GraphicsImage *gl_cursor;
 };
 
 

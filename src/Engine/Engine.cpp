@@ -202,6 +202,7 @@ void Engine::drawHUD() {
 void Engine::Draw() {
     drawWorld();
     drawHUD();
+    render->drawGLCursor();
     render->flushAndScale();
     drawOverlay();
     render->swapBuffers();

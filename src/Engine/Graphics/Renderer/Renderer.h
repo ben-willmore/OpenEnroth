@@ -174,6 +174,7 @@ class Renderer {
     virtual bool ReloadShaders() = 0;
     virtual void DoRenderBillboards_D3D() = 0;
 
+    virtual void drawGLCursor() = 0;
     virtual void flushAndScale() = 0;
     virtual void swapBuffers() = 0;
     virtual void beginOverlays() = 0;

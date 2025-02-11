@@ -176,14 +176,12 @@ void SdlWindow::warpMouse(Pointi position) {
 }
 
 std::unique_ptr<PlatformOpenGLContext> SdlWindow::createOpenGLContext(const PlatformOpenGLOptions &options) {
-    Logger *logger = _state->logger();
-
     logger->debug("Creating OpenGL context with options: versionMajor={}, versionMinor={}, profile={}",
                   options.versionMajor, options.versionMinor, static_cast<int>(options.profile));
 
     // Set OpenGL ES context
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-    
+
     // Request OpenGL ES 3.0 context
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);

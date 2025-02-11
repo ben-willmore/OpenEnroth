@@ -103,6 +103,7 @@ class NullRenderer : public BaseRenderer {
 
     virtual void DoRenderBillboards_D3D() override;
 
+    virtual void drawGLCursor() override;
     virtual void flushAndScale() override;
     virtual void swapBuffers() override;
 

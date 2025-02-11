@@ -53,6 +53,10 @@
 
 #include "OpenGLShader.h"
 
+#include "Utility/Memory/Blob.h"
+#include "Library/Image/PCX.h"
+#include <SDL2/SDL_mouse.h>
+
 #ifndef LOWORD
     #define LOWORD(l) ((unsigned short)(((std::uintptr_t)(l)) & 0xFFFF))
 #endif
@@ -389,6 +393,7 @@ int forceperstorecnt{ 0 };
 void OpenGLRenderer::DrawProjectile(float srcX, float srcY, float srcworldview, float srcfovoworldview,
                                     float dstX, float dstY, float dstworldview, float dstfovoworldview,
                                     GraphicsImage *texture) {
+
     // billboards projectile - lightning bolt
 
     int xDifference = bankersRounding(dstX - srcX);
@@ -3129,6 +3134,8 @@ void OpenGLRenderer::DrawTextNew(int x, int y, int width, int h, float u1, float
 }
 
 void OpenGLRenderer::flushAndScale() {
+    drawGLCursor();
+
     // flush any undrawn items
     DrawTwodVerts();
     EndLines2D();
@@ -3173,6 +3180,63 @@ void OpenGLRenderer::swapBuffers() {
 
     if (engine->config->graphics.FPSLimit.value() > 0)
         _frameLimiter.tick(engine->config->graphics.FPSLimit.value());
+}
+
+void OpenGLRenderer::initGLCursor() {
+	const char* env_var = getenv("USE_GL_CURSOR");
+
+	if (env_var == nullptr) {
+		use_gl_cursor = false;
+	} else {
+		use_gl_cursor = (strcmp(env_var, "true")==0);
+	}
+
+	if (!use_gl_cursor)
+		return;
+
+    gl_cursor = nullptr;
+}
+
+void OpenGLRenderer::drawGLCursor() {
+    if (!use_gl_cursor)
+        return;
+
+    if (!gl_cursor) {
+        Blob data = Blob::fromFile("pointer.pcx");
+        gl_cursor = GraphicsImage::Create(pcx::decode(data));
+        Color *pPixels = gl_cursor->rgba().pixels().data();
+
+        // Basic structure from GUIFont.cpp
+        // Also, we can't load a 32-bit PCX, so this uses the blue
+        // channel as an alpha channel. Anywhere red!=blue will be
+        // made transparent, and the blue channel will be set equal
+        // to the red channel.
+        Color tmpColor;
+        int tmp;
+        for (int i=0;i<1024;i++) {
+            tmpColor = pPixels[i];
+            if (tmpColor.b==tmpColor.r) {
+                tmpColor.a = 255;
+            } else {
+                tmpColor = Color(255,255,255,0);
+            }
+            pPixels[i] = tmpColor;
+        }
+        Update_Texture(gl_cursor);
+    }
+
+    int x,y;
+    SDL_GetMouseState(&x, &y);
+    
+    Recti rect;
+    Color col = Color(255,255,255);
+
+    rect.x = x;
+    rect.y = y;
+    rect.w = 32;
+    rect.h = 32;
+
+    render->DrawImage(gl_cursor, rect, 0, col);
 }
 
 void OpenGLRenderer::Present() {
@@ -4489,6 +4553,8 @@ static void* GLADloadproc(void* userptr, const char* name) {
 }
 
 bool OpenGLRenderer::Initialize() {
+    initGLCursor();
+
     if (!BaseRenderer::Initialize()) {
         return false;
     }

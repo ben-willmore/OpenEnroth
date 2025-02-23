@@ -22,7 +22,7 @@
 #include "Media/Audio/AudioPlayer.h"
 
 static bool characterHasJar(int charIndex, int jarIndex) {
-    for (const ItemGen &item : pParty->pCharacters[charIndex].pInventoryItemList)
+    for (const Item &item : pParty->pCharacters[charIndex].pInventoryItemList)
         if (item.itemId == ITEM_QUEST_LICH_JAR_FULL && item.lichJarCharacterIndex == jarIndex)
             return true;
     return false;
@@ -70,7 +70,7 @@ GAME_TEST(Issues, Issue1038) {
     auto conditionsTape = charTapes.conditions();
     test.playTraceFromTestData("issue_1038.mm7", "issue_1038.json");
     EXPECT_EQ(conditionsTape.frontBack(), tape({CONDITION_GOOD, CONDITION_INSANE, CONDITION_GOOD, CONDITION_INSANE},
-                                               {CONDITION_SLEEP, CONDITION_INSANE, CONDITION_UNCONSCIOUS, CONDITION_UNCONSCIOUS}));
+                                               {CONDITION_SLEEP, CONDITION_INSANE, CONDITION_GOOD, CONDITION_UNCONSCIOUS}));
 }
 
 GAME_TEST(Issues, Issue1040) {
@@ -553,7 +553,7 @@ GAME_TEST(Issues, Issue1383) {
 
     Character character;
     character.pActiveSkills[CHARACTER_SKILL_MERCHANT] = CombinedSkillValue(10, CHARACTER_SKILL_MASTERY_GRANDMASTER);
-    ItemGen item;
+    Item item;
     item.itemId = ITEM_SPELLBOOK_ARMAGEDDON;
     int gmPrice = PriceCalculator::itemBuyingPriceForPlayer(&character, item.GetValue(), 10.0f);
     EXPECT_EQ(gmPrice, 7500);
@@ -613,6 +613,28 @@ GAME_TEST(Issues, Issue1429c) {
     EXPECT_EQ(hpTape.back(), pParty->pCharacters[3].GetMaxHealth() / 2);
 }
 
+GAME_TEST(Issues, Issue1430) {
+    // Party can't die of exhaustion.
+    // This happened to be a non-issue. Party CAN die of exhaustion, but on 100 realtime seconds per frame party was
+    // slamming into the ground upon respawn at 100g & insta-dying. We just check here that this doesn't happen.
+    test.prepareForNextTest(100000, RANDOM_ENGINE_MERSENNE_TWISTER); // 100 realtime seconds per frame.
+    engine->config->debug.NoActors.setValue(true);
+
+    auto deathsTape = tapes.deaths();
+    auto hpsTape = charTapes.hps();
+    auto statusTape = tapes.statusBar();
+
+    game.startNewGame();
+    test.startTaping();
+    game.tick(200); // 20k realtime seconds = 600k in-game seconds = 166 in-game hours, enough to die once.
+
+    EXPECT_EQ(deathsTape.delta(), 1);
+    EXPECT_EQ(hpsTape.back(), tape(1, 1, 1, 1));
+
+    // We check the string below with starts_with b/c it contains Windows-1252-encoded "..." as last char. Doh.
+    EXPECT_CONTAINS(statusTape, [](std::string_view status) { return status.starts_with("Once again you've cheated death!"); });
+}
+
 GAME_TEST(Prs, Pr1440) {
     // Frame table search is off by 1 tick.
     TextureFrameTable table;
@@ -644,7 +666,7 @@ GAME_TEST(Prs, Pr1440) {
         EXPECT_EQ(table.GetFrameTexture(0, Duration::fromTicks(i)), tex1) << i;
 }
 
-GAME_TEST(Issues, Issue1447A) {
+GAME_TEST(Issues, Issue1447a) {
     // Fire bolt doesn't emit particles in turn based mode
     auto particlesTape = tapes.custom([] { return std::ranges::count_if(engine->particle_engine.get()->pParticles,
                                         [](const Particle &par) { return par.type != ParticleType_Invalid; }); });
@@ -654,7 +676,7 @@ GAME_TEST(Issues, Issue1447A) {
     EXPECT_GT(particlesTape.max(), 10);
 }
 
-GAME_TEST(Issues, Issue1447B) {
+GAME_TEST(Issues, Issue1447b) {
     // Fireball doesn't emit particles in turn based mode
     auto particlesTape = tapes.custom([] { return std::ranges::count_if(engine->particle_engine.get()->pParticles,
                                         [](const Particle& par) { return par.type != ParticleType_Invalid; }); });
@@ -664,7 +686,7 @@ GAME_TEST(Issues, Issue1447B) {
     EXPECT_GT(particlesTape.max(), 10);
 }
 
-GAME_TEST(Issues, Issue1447C) {
+GAME_TEST(Issues, Issue1447c) {
     // Acid blast doesn't emit particles in turn based mode
     auto particlesTape = tapes.custom([] { return std::ranges::count_if(engine->particle_engine.get()->pParticles,
                                         [](const Particle& par) { return par.type != ParticleType_Invalid; }); });

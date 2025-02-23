@@ -1037,17 +1037,10 @@ void loadAndPrepareBLV(MapId mapid, bool bLoading) {
 
     pGameLoadingUI_ProgressBar->Progress();
 
-    for (int i = 0; i < pSpriteObjects.size(); ++i) {
-        if (pSpriteObjects[i].uObjectDescID) {
-            if (pSpriteObjects[i].containing_item.itemId != ITEM_NULL) {
-                if (pSpriteObjects[i].containing_item.itemId != ITEM_POTION_BOTTLE &&
-                    pItemTable->pItems[pSpriteObjects[i].containing_item.itemId].uEquipType == ITEM_TYPE_POTION &&
-                    !pSpriteObjects[i].containing_item.potionPower)
-                    pSpriteObjects[i].containing_item.potionPower = grng->random(15) + 5;
-                pItemTable->SetSpecialBonus(&pSpriteObjects[i].containing_item);
-            }
-        }
-    }
+    // TODO(captainurist): merge with ArrangeSpriteObjects?
+    for (int i = 0; i < pSpriteObjects.size(); ++i)
+        if (pSpriteObjects[i].uObjectDescID)
+            pSpriteObjects[i].containing_item.postGenerate(ITEM_SOURCE_MAP);
 
     // INDOOR initialize actors
     alertStatus = false;
@@ -1986,7 +1979,7 @@ int SpawnEncounterMonsters(MapInfo *map_info, int enc_index) {
 int DropTreasureAt(ItemTreasureLevel trs_level, RandomItemType trs_type, Vec3f pos, uint16_t facing) {
     SpriteObject a1;
     pItemTable->generateItem(trs_level, trs_type, &a1.containing_item);
-    a1.uType = pItemTable->pItems[a1.containing_item.itemId].uSpriteID;
+    a1.uType = pItemTable->items[a1.containing_item.itemId].spriteId;
     a1.uObjectDescID = pObjectList->ObjectIDByItemID(a1.uType);
     a1.vPosition = pos;
     a1.uFacing = facing;
@@ -2019,12 +2012,12 @@ void SpawnRandomTreasure(MapInfo *mapInfo, SpawnPoint *a2) {
         }
 
         a1a.containing_item.generateGold(a2->uItemIndex);
-        a1a.uType = pItemTable->pItems[a1a.containing_item.itemId].uSpriteID;
+        a1a.uType = pItemTable->items[a1a.containing_item.itemId].spriteId;
         a1a.uObjectDescID = pObjectList->ObjectIDByItemID(a1a.uType);
     } else {
         if (!a1a.containing_item.GenerateArtifact())
             return;
-        a1a.uType = pItemTable->pItems[a1a.containing_item.itemId].uSpriteID;
+        a1a.uType = pItemTable->items[a1a.containing_item.itemId].spriteId;
         a1a.uObjectDescID = pObjectList->ObjectIDByItemID(a1a.uType);
         a1a.containing_item.Reset();  // TODO(captainurist): this needs checking
     }

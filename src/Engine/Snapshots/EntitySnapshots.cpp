@@ -443,18 +443,18 @@ void reconstruct(const SpellBuff_MM7 &src, SpellBuff *dst) {
     dst->isGMBuff = src.flags;
 }
 
-void snapshot(const ItemGen &src, ItemGen_MM7 *dst) {
+void snapshot(const Item &src, ItemGen_MM7 *dst) {
     memzero(dst);
 
     dst->itemId = std::to_underlying(src.itemId);
     if (isPotion(src.itemId)) {
-        dst->attributeEnchantmentOrPotionPower = src.potionPower;
-    } else if (src.attributeEnchantment) {
-        dst->attributeEnchantmentOrPotionPower = std::to_underlying(*src.attributeEnchantment) + 1;
+        dst->standardEnchantmentOrPotionPower = src.potionPower;
+    } else if (src.standardEnchantment) {
+        dst->standardEnchantmentOrPotionPower = std::to_underlying(*src.standardEnchantment) + 1;
     } else {
-        dst->attributeEnchantmentOrPotionPower = 0;
+        dst->standardEnchantmentOrPotionPower = 0;
     }
-    dst->attributeEnchantmentStrength = src.attributeEnchantmentStrength;
+    dst->standardEnchantmentStrength = src.standardEnchantmentStrength;
     if (isGold(src.itemId)) {
         dst->specialEnchantmentOrGoldAmount = src.goldAmount;
     } else {
@@ -469,19 +469,19 @@ void snapshot(const ItemGen &src, ItemGen_MM7 *dst) {
     snapshot(src.enchantmentExpirationTime, &dst->enchantmentExpirationTime);
 }
 
-void reconstruct(const ItemGen_MM7 &src, ItemGen *dst) {
+void reconstruct(const ItemGen_MM7 &src, Item *dst) {
     dst->itemId = static_cast<ItemId>(src.itemId);
     if (isPotion(dst->itemId)) {
-        dst->potionPower = src.attributeEnchantmentOrPotionPower;
-        dst->attributeEnchantment = {};
-    } else if (src.attributeEnchantmentOrPotionPower) {
+        dst->potionPower = src.standardEnchantmentOrPotionPower;
+        dst->standardEnchantment = {};
+    } else if (src.standardEnchantmentOrPotionPower) {
         dst->potionPower = 0;
-        dst->attributeEnchantment = static_cast<CharacterAttribute>(src.attributeEnchantmentOrPotionPower - 1);
+        dst->standardEnchantment = static_cast<CharacterAttribute>(src.standardEnchantmentOrPotionPower - 1);
     } else {
         dst->potionPower = 0;
-        dst->attributeEnchantment = {};
+        dst->standardEnchantment = {};
     }
-    dst->attributeEnchantmentStrength = src.attributeEnchantmentStrength;
+    dst->standardEnchantmentStrength = src.standardEnchantmentStrength;
     if (isGold(dst->itemId)) {
         dst->goldAmount = src.specialEnchantmentOrGoldAmount;
         dst->specialEnchantment = ITEM_ENCHANTMENT_NULL;

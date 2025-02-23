@@ -9,7 +9,7 @@
 #include "Engine/Graphics/Renderer/Renderer.h"
 #include "Engine/Graphics/Image.h"
 #include "Engine/Localization.h"
-#include "Engine/Objects/Items.h"
+#include "Engine/Objects/Item.h"
 #include "Engine/Tables/ItemTable.h"
 #include "Engine/Tables/MerchantTable.h"
 #include "Engine/Party.h"
@@ -225,7 +225,7 @@ void GUIWindow_MagicGuild::buyBooksDialogue() {
                 testx += 6;
             }
 
-            ItemGen *item = &pParty->spellBooksInGuilds[houseId()][testx];
+            Item *item = &pParty->spellBooksInGuilds[houseId()][testx];
 
             if (item->itemId != ITEM_NULL) {
                 int testpos;
@@ -310,7 +310,7 @@ void GUIWindow_MagicGuild::houseScreenClick() {
             testx += 6;
         }
 
-        ItemGen &boughtItem = pParty->spellBooksInGuilds[houseId()][testx];
+        Item &boughtItem = pParty->spellBooksInGuilds[houseId()][testx];
         if (boughtItem.itemId != ITEM_NULL) {
             int testpos;
             if (pt.y >= 250) {
@@ -369,11 +369,11 @@ void GUIWindow_MagicGuild::generateSpellBooksForGuild() {
             }
         }
 
-        ItemGen *itemSpellbook = &pParty->spellBooksInGuilds[houseId()][i];
+        Item *itemSpellbook = &pParty->spellBooksInGuilds[houseId()][i];
         itemSpellbook->Reset();
         itemSpellbook->itemId = pItemNum;
         itemSpellbook->SetIdentified();
 
-        shop_ui_items_in_store[i] = assets->getImage_ColorKey(pItemTable->pItems[pItemNum].iconName);
+        shop_ui_items_in_store[i] = assets->getImage_ColorKey(pItemTable->items[pItemNum].iconName);
     }
 }

@@ -379,7 +379,7 @@ void prepareArenaFight(ArenaLevel level) {
  * @brief Oracle's 'I lost it!' dialog option
  */
 void oracleDialogue() {
-    ItemGen *item = nullptr;
+    Item *item = nullptr;
     ItemId item_id = ITEM_NULL;
 
     // display "You never had it" if nothing missing will be found
@@ -403,7 +403,7 @@ void oracleDialogue() {
         // TODO(captainurist): what if fmt throws?
         current_npc_text = fmt::sprintf(pNPCTopics[666].pText, // "Here's %s that you lost. Be careful" // NOLINT: this is not ::sprintf.
                                         fmt::format("{::}{}\f00000", colorTable.Sunflower.tag(),
-                                                    pItemTable->pItems[item_id].pUnidentifiedName));
+                                                    pItemTable->items[item_id].unidentifiedName));
     }
 
     // missing item is lich jar and we need to bind soul vessel to lich class character

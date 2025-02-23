@@ -189,7 +189,7 @@ int Party::canActCount() const {
     return result;
 }
 
-void Party::setHoldingItem(ItemGen *pItem, int offsetX, int offsetY) {
+void Party::setHoldingItem(Item *pItem, int offsetX, int offsetY) {
     placeHeldItemInInventoryOrDrop();
     pPickedItem = *pItem;
     mouse->SetCursorBitmapFromItemID(pPickedItem.itemId);
@@ -260,7 +260,7 @@ void Party::switchToNextActiveCharacter() {
 
 bool Party::hasItem(ItemId uItemID) {
     for (Character &player : this->pCharacters) {
-        for (ItemGen &item : player.pInventoryItemList) {
+        for (Item &item : player.pInventoryItemList) {
             if (item.itemId == uItemID)
                 return true;
         }
@@ -377,7 +377,7 @@ unsigned int Party::getPartyFame() {
 
 void Party::createDefaultParty(bool bDebugGiveItems) {
     signed int uNumPlayers;  // [sp+18h] [bp-28h]@1
-    ItemGen Dst;             // [sp+1Ch] [bp-24h]@10
+    Item Dst;             // [sp+1Ch] [bp-24h]@10
 
     pHireling1Name[0] = 0;
     pHireling2Name[0] = 0;
@@ -1004,7 +1004,7 @@ void Party::dropHeldItem() {
     }
 
     SpriteObject sprite;
-    sprite.uType = pItemTable->pItems[pPickedItem.itemId].uSpriteID;
+    sprite.uType = pItemTable->items[pPickedItem.itemId].spriteId;
     sprite.uObjectDescID = pObjectList->ObjectIDByItemID(sprite.uType);
     sprite.spell_caster_pid = Pid(OBJECT_Character, 0);
     sprite.vPosition = pos + Vec3f(0, 0, eyeLevel);
@@ -1035,12 +1035,12 @@ void Party::placeHeldItemInInventoryOrDrop() {
     }
 }
 
-bool Party::addItemToParty(ItemGen *pItem, bool isSilent) {
-    if (!pItemTable->pItems[pItem->itemId].identifyDifficulty) {
+bool Party::addItemToParty(Item *pItem, bool isSilent) {
+    if (!pItemTable->items[pItem->itemId].identifyDifficulty) {
         pItem->SetIdentified();
     }
 
-    if (!pItemTable->pItems[pItem->itemId].iconName.empty()) {
+    if (!pItemTable->items[pItem->itemId].iconName.empty()) {
         int playerId = hasActiveCharacter() ? (pParty->_activeCharacter - 1) : 0;
         for (int i = 0; i < pCharacters.size(); i++, playerId++) {
             if (playerId >= pCharacters.size()) {

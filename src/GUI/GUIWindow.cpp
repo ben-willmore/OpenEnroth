@@ -780,7 +780,7 @@ Color GetSkillColor(CharacterClass uPlayerClass, CharacterSkillType uPlayerSkill
     return ui_character_skillinfo_cant_learn;
 }
 
-std::string BuildDialogueString(std::string_view str, int uPlayerID, NPCData *npc, ItemGen *item, HouseId houseId, ShopScreen shop_screen, Time *a6) {
+std::string BuildDialogueString(std::string_view str, int uPlayerID, NPCData *npc, Item *item, HouseId houseId, ShopScreen shop_screen, Time *a6) {
     std::string v1;
     Character *pPlayer;       // ebx@3
     int v29;               // eax@68
@@ -1048,7 +1048,12 @@ void WindowManager::DeleteAllVisibleWindows() {
 
     current_screen_type = SCREEN_GAME;
     engine->_messageQueue->clearAll();
+
+    // TODO(captainurist): Unload() un-pauses the event timer, which is not always the right thing to do.
+    //                     So we hack. Find a better way.
+    bool wasPaused = pEventTimer->isPaused();
     pMediaPlayer->Unload();
+    pEventTimer->setPaused(wasPaused);
 }
 
 void MainMenuUI_LoadFontsAndSomeStuff() {

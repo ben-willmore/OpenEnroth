@@ -296,7 +296,7 @@ void DrawPopupWindow(unsigned int uX, unsigned int uY, unsigned int uWidth,
 }
 
 //----- (0041D895) --------------------------------------------------------
-void GameUI_DrawItemInfo(ItemGen *inspect_item) {
+void GameUI_DrawItemInfo(Item *inspect_item) {
     unsigned int frameXpos;     // eax@3
     int v34;             // esi@81
     GUIWindow iteminfo_window;  // [sp+208h] [bp-70h]@2
@@ -330,7 +330,7 @@ void GameUI_DrawItemInfo(ItemGen *inspect_item) {
     // added so window is correct size with broken items
     iteminfo_window.uFrameHeight = inspect_item_image->height() + itemYspacing + 54;
 
-    if (!pItemTable->pItems[inspect_item->itemId].identifyDifficulty)
+    if (!pItemTable->items[inspect_item->itemId].identifyDifficulty)
         inspect_item->SetIdentified();
 
     int GoldAmount = 0;
@@ -419,7 +419,7 @@ void GameUI_DrawItemInfo(ItemGen *inspect_item) {
             (itemYspacing + (float)iteminfo_window.uFrameY + 30) / 480.0f, inspect_item_image);
         iteminfo_window.DrawTitleText(
             assets->pFontArrus.get(), 0, 0xCu, colorTable.PaleCanary,
-            pItemTable->pItems[inspect_item->itemId].pUnidentifiedName, 3);
+            pItemTable->items[inspect_item->itemId].unidentifiedName, 3);
         iteminfo_window.DrawTitleText(
             assets->pFontArrus.get(), 0x64u,
             ((int)iteminfo_window.uFrameHeight >> 1) -
@@ -438,9 +438,9 @@ void GameUI_DrawItemInfo(ItemGen *inspect_item) {
 
     text[0] = localization->FormatString(
         LSTR_FMT_TYPE_S,
-        pItemTable->pItems[inspect_item->itemId].pUnidentifiedName);
+        pItemTable->items[inspect_item->itemId].unidentifiedName);
 
-    switch (inspect_item->GetItemEquipType()) {
+    switch (inspect_item->type()) {
         case ITEM_TYPE_SINGLE_HANDED:
         case ITEM_TYPE_TWO_HANDED: {
             text[1] = fmt::format("{}: +{}   {}: {}d{}",
@@ -491,15 +491,15 @@ void GameUI_DrawItemInfo(ItemGen *inspect_item) {
                 text[2] = fmt::format("{}: {}", localization->GetString(LSTR_POWER), inspect_item->potionPower);
         } else if (inspect_item->isReagent()) {
             text[2] = fmt::format("{}: {}", localization->GetString(LSTR_POWER), inspect_item->GetDamageDice());
-        } else if (inspect_item->attributeEnchantment) {
+        } else if (inspect_item->standardEnchantment) {
             text[2] = fmt::format("{}: {} +{}",
                                   localization->GetString(LSTR_SPECIAL_2),
-                                  pItemTable->standardEnchantments[*inspect_item->attributeEnchantment].pBonusStat,
-                                  inspect_item->attributeEnchantmentStrength);
+                                  pItemTable->standardEnchantments[*inspect_item->standardEnchantment].attributeName,
+                                  inspect_item->standardEnchantmentStrength);
         } else if (inspect_item->specialEnchantment != ITEM_ENCHANTMENT_NULL) {
             text[2] = fmt::format("{}: {}",
                                   localization->GetString(LSTR_SPECIAL_2),
-                                  pItemTable->pSpecialEnchantments[inspect_item->specialEnchantment].pBonusStatement);
+                                  pItemTable->specialEnchantments[inspect_item->specialEnchantment].description);
         } else if (inspect_item->isWand()) {
             text[2] = fmt::sprintf(localization->GetString(LSTR_FMT_S_U_OUT_OF_U),
                                    localization->GetString(LSTR_CHARGES),
@@ -514,15 +514,15 @@ void GameUI_DrawItemInfo(ItemGen *inspect_item) {
     for (const std::string &s : text)
         if (!s.empty())
             Str_int += assets->pFontComic->CalcTextHeight(s, iteminfo_window.uFrameWidth, 100) + 3;
-    if (!pItemTable->pItems[inspect_item->itemId].pDescription.empty())
+    if (!pItemTable->items[inspect_item->itemId].description.empty())
         Str_int += assets->pFontSmallnum->CalcTextHeight(
-            pItemTable->pItems[inspect_item->itemId].pDescription,
+            pItemTable->items[inspect_item->itemId].description,
             iteminfo_window.uFrameWidth, 100);
     iteminfo_window.uFrameHeight = inspect_item_image->height() + itemYspacing + 54;
     if ((signed int)Str_int > (signed int)iteminfo_window.uFrameHeight)
         iteminfo_window.uFrameHeight = (unsigned int)Str_int;
     if (inspect_item->flags & ITEM_TEMP_BONUS &&
-        (inspect_item->specialEnchantment != ITEM_ENCHANTMENT_NULL || inspect_item->attributeEnchantment))
+        (inspect_item->specialEnchantment != ITEM_ENCHANTMENT_NULL || inspect_item->standardEnchantment))
         iteminfo_window.uFrameHeight += assets->pFontComic->GetHeight();
     v85 = 0;
     if (assets->pFontArrus->GetHeight()) {
@@ -565,8 +565,8 @@ void GameUI_DrawItemInfo(ItemGen *inspect_item) {
             v34 += assets->pFontComic->CalcTextHeight(s, iteminfo_window.uFrameWidth, 100, 0) + 3;
         }
     }
-    if (!pItemTable->pItems[inspect_item->itemId].pDescription.empty())
-        iteminfo_window.DrawText(assets->pFontSmallnum.get(), {100, v34}, colorTable.White, pItemTable->pItems[inspect_item->itemId].pDescription);
+    if (!pItemTable->items[inspect_item->itemId].description.empty())
+        iteminfo_window.DrawText(assets->pFontSmallnum.get(), {100, v34}, colorTable.White, pItemTable->items[inspect_item->itemId].description);
     iteminfo_window.uFrameX += 12;
     iteminfo_window.uFrameWidth -= 24;
     iteminfo_window.DrawTitleText(assets->pFontArrus.get(), 0, 0xCu, colorTable.PaleCanary,
@@ -580,7 +580,7 @@ void GameUI_DrawItemInfo(ItemGen *inspect_item) {
         render->ResetUIClipRect();
     } else {
         if ((inspect_item->flags & ITEM_TEMP_BONUS) &&
-            (inspect_item->specialEnchantment != ITEM_ENCHANTMENT_NULL || inspect_item->attributeEnchantment)) {
+            (inspect_item->specialEnchantment != ITEM_ENCHANTMENT_NULL || inspect_item->standardEnchantment)) {
             LongCivilDuration d = (inspect_item->enchantmentExpirationTime - pParty->GetPlayingTime()).toLongCivilDuration();
 
             std::string txt4 = "Duration:";
@@ -1461,7 +1461,7 @@ void ShowPopupShopSkills() {
 //----- (004B1A2D) --------------------------------------------------------
 void ShowPopupShopItem() {
     // TODO(pskelton): Extract common item picking code
-    ItemGen *item;  // ecx@13
+    Item *item;  // ecx@13
     int invindex;
     int testpos;
     HouseType houseType = window_SpeakInHouse->buildingType();
@@ -2080,7 +2080,7 @@ void Inventory_ItemPopupAndAlchemy() {
         return;
     }
 
-    ItemGen *item = nullptr;
+    Item *item = nullptr;
 
     static const std::array<int, 6> ringsX = {0x1EA, 0x21A, 0x248, 0x1EA, 0x21A, 0x248};
     static const std::array<int, 6> ringsY = {0x0CA, 0x0CA, 0x0CA, 0x0FA, 0x0FA, 0x0FA};
@@ -2270,7 +2270,7 @@ void Inventory_ItemPopupAndAlchemy() {
                     pParty->activeCharacter().SetVariable(VAR_AutoNotes, pItemTable->potionNotes[potionSrc1][potionSrc2]);
                 }
             }
-            if (!(pItemTable->pItems[item->itemId].identifyDifficulty)) {
+            if (!(pItemTable->items[item->itemId].identifyDifficulty)) {
                 item->flags |= ITEM_IDENTIFIED;
             }
             pParty->activeCharacter().playReaction(SPEECH_POTION_SUCCESS);
@@ -2281,7 +2281,7 @@ void Inventory_ItemPopupAndAlchemy() {
                 pParty->activeCharacter().pInventoryItemList[bottleId - 1].flags = ITEM_IDENTIFIED;
             } else {
                 // Can't fit bottle in inventory - place it in hand
-                ItemGen bottle;
+                Item bottle;
                 bottle.itemId = ITEM_POTION_BOTTLE;
                 bottle.flags = ITEM_IDENTIFIED;
                 pParty->setHoldingItem(&bottle);
@@ -2350,7 +2350,7 @@ void Inventory_ItemPopupAndAlchemy() {
             return;
         }
         if (item->isWeapon()) {
-            if (item->specialEnchantment != ITEM_ENCHANTMENT_NULL || item->attributeEnchantment) {
+            if (item->specialEnchantment != ITEM_ENCHANTMENT_NULL || item->standardEnchantment) {
                 // Sound error and stop right click item actions until button is released
                 pAudioPlayer->playUISound(SOUND_error);
                 rightClickItemActionPerformed = true;

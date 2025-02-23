@@ -407,19 +407,19 @@ GAME_TEST(Issues, Issue675) {
 
     std::unordered_set<CharacterAttribute> generatedEnchantments;
 
-    ItemGen item;
+    Item item;
     for (int i = 0; i < 300; i++) {
         for (ItemTreasureLevel level : levels) {
             pItemTable->generateItem(level, RANDOM_ITEM_ANY, &item);
             if (isPotion(item.itemId)) {
                 EXPECT_GE(item.potionPower, 1);
-                EXPECT_FALSE(item.attributeEnchantment);
+                EXPECT_FALSE(item.standardEnchantment);
             } else {
                 EXPECT_EQ(item.potionPower, 0);
-                if (item.attributeEnchantment) {
-                    EXPECT_GE(*item.attributeEnchantment, ATTRIBUTE_FIRST_ENCHANTABLE);
-                    EXPECT_LE(*item.attributeEnchantment, ATTRIBUTE_LAST_ENCHANTABLE);
-                    generatedEnchantments.insert(*item.attributeEnchantment);
+                if (item.standardEnchantment) {
+                    EXPECT_GE(*item.standardEnchantment, ATTRIBUTE_FIRST_ENCHANTABLE);
+                    EXPECT_LE(*item.standardEnchantment, ATTRIBUTE_LAST_ENCHANTABLE);
+                    generatedEnchantments.insert(*item.standardEnchantment);
                 }
             }
         }
@@ -446,7 +446,7 @@ GAME_TEST(Issues, Issue677) {
 
 GAME_TEST(Issues, Issue680) {
     // Chest items duplicate sometimes
-    auto chestItemsCount = tapes.custom([] { return std::count_if(vChests[4].igChestItems.cbegin(), vChests[4].igChestItems.cend(), [&](ItemGen item) { return item.itemId != ITEM_NULL; }); });
+    auto chestItemsCount = tapes.custom([] { return std::count_if(vChests[4].igChestItems.cbegin(), vChests[4].igChestItems.cend(), [&](Item item) { return item.itemId != ITEM_NULL; }); });
     test.playTraceFromTestData("issue_680.mm7", "issue_680.json");
     // Make sure we havent gained any duplicates
     EXPECT_EQ(chestItemsCount.front(), chestItemsCount.back());

@@ -535,10 +535,13 @@ void UpdateUserInput_and_MapSpecificStuff() {
 void PrepareWorld(int _0_box_loading_1_fullscreen) {
     Vis *vis = EngineIocContainer::ResolveVis();
 
+    CastSpellInfoHelpers::cancelSpellCastInProgress();
     pEventTimer->setPaused(true);
     pMiscTimer->setPaused(true);
-    CastSpellInfoHelpers::cancelSpellCastInProgress();
     DoPrepareWorld(false, (_0_box_loading_1_fullscreen == 0) + 1);
+
+    assert(pEventTimer->isPaused()); // DoPrepareWorld shouldn't un-pause.
+    assert(pMiscTimer->isPaused());
     pMiscTimer->setPaused(false);
     pEventTimer->setPaused(false);
 }
@@ -1029,7 +1032,7 @@ void back_to_game() {
         pGUIWindow_ScrollWindow = nullptr;
     }
 
-    if (current_screen_type == SCREEN_GAME && !pGUIWindow_CastTargetedSpell) {
+    if (current_screen_type == SCREEN_GAME && sCurrentMenuID == MENU_NONE && !pGUIWindow_CastTargetedSpell) {
         pEventTimer->setPaused(false);
     }
 }
@@ -1375,7 +1378,7 @@ void RegeneratePartyHealthMana() {
         for (ItemSlot idx : allItemSlots()) {
             if (character.HasItemEquipped(idx)) {
                 unsigned _idx = character.pEquipment[idx];
-                ItemGen equppedItem = character.pInventoryItemList[_idx - 1];
+                Item equppedItem = character.pInventoryItemList[_idx - 1];
                 if (!isRegular(equppedItem.itemId)) {
                     if (equppedItem.itemId == ITEM_RELIC_ETHRICS_STAFF) {
                         character.health -= ticks5;
@@ -1426,7 +1429,7 @@ void RegeneratePartyHealthMana() {
         // Lich mana/health drain/regen.
         if (character.classType == CLASS_LICH) {
             bool lich_has_jar = false;
-            for (const ItemGen &item : character.pInventoryItemList)
+            for (const Item &item : character.pInventoryItemList)
                 if (item.itemId == ITEM_QUEST_LICH_JAR_FULL && item.lichJarCharacterIndex == character.getCharacterIndex())
                     lich_has_jar = true;
 

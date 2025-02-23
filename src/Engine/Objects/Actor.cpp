@@ -1834,12 +1834,12 @@ void Actor::Die(unsigned int uActorID) {
     for (SpellBuff &buff : actor->buffs)
         buff.Reset();
 
-    ItemGen drop;
+    Item drop;
     drop.Reset();
     drop.itemId = itemDropForMonsterType(monsterTypeForMonsterId(actor->monsterInfo.id));
 
     if (grng->random(100) < 20 && drop.itemId != ITEM_NULL) {
-        SpriteObject::dropItemAt(pItemTable->pItems[drop.itemId].uSpriteID,
+        SpriteObject::dropItemAt(pItemTable->items[drop.itemId].spriteId,
                                  actor->pos + Vec3f(0, 0, 16), grng->random(200) + 200, 1, true, 0, &drop);
     }
 
@@ -3189,7 +3189,7 @@ int Actor::DamageMonsterFromParty(Pid a1, unsigned int uActorID_Monster, const V
         } else {
             for (ItemSlot i : {ITEM_SLOT_OFF_HAND, ITEM_SLOT_MAIN_HAND}) {
                 if (character->HasItemEquipped(i)) {
-                    ItemGen *item;
+                    Item *item;
                     if (i == ITEM_SLOT_OFF_HAND)
                         item = character->GetOffHandItem();
                     else
@@ -3551,7 +3551,7 @@ void StatusBarItemFound(int num_gold_found, std::string_view item_unidentified_n
 
 //----- (00426A5A) --------------------------------------------------------
 void Actor::LootActor() {
-    ItemGen Dst;         // [sp+Ch] [bp-2Ch]@1
+    Item Dst;         // [sp+Ch] [bp-2Ch]@1
     bool itemFound;      // [sp+30h] [bp-8h]@1
 
     pParty->placeHeldItemInInventoryOrDrop();
@@ -3575,17 +3575,10 @@ void Actor::LootActor() {
     if (this->carriedItemId != ITEM_NULL) {
         Dst.Reset();
         Dst.itemId = this->carriedItemId;
+        Dst.postGenerate(ITEM_SOURCE_MONSTER);
 
-        StatusBarItemFound(foundGold, pItemTable->pItems[Dst.itemId].pUnidentifiedName);
+        StatusBarItemFound(foundGold, pItemTable->items[Dst.itemId].unidentifiedName);
 
-        if (Dst.isWand()) {
-            Dst.numCharges = grng->random(6) + Dst.GetDamageMod() + 1;
-            Dst.maxCharges = Dst.numCharges;
-        }
-        if (Dst.isPotion() && Dst.itemId != ITEM_POTION_BOTTLE) {
-            Dst.potionPower = 2 * grng->random(4) + 2;
-        }
-        pItemTable->SetSpecialBonus(&Dst);
         if (!pParty->addItemToParty(&Dst)) {
             pParty->setHoldingItem(&Dst);
         }
@@ -3612,7 +3605,7 @@ void Actor::LootActor() {
             Dst = this->items[3];
             this->items[3].Reset();
 
-            StatusBarItemFound(foundGold, pItemTable->pItems[Dst.itemId].pUnidentifiedName);
+            StatusBarItemFound(foundGold, pItemTable->items[Dst.itemId].unidentifiedName);
 
             if (!pParty->addItemToParty(&Dst)) {
                 pParty->setHoldingItem(&Dst);
@@ -3623,7 +3616,7 @@ void Actor::LootActor() {
         if (grng->random(100) < this->monsterInfo.treasureDropChance && this->monsterInfo.treasureLevel != ITEM_TREASURE_LEVEL_INVALID) {
             pItemTable->generateItem(this->monsterInfo.treasureLevel, this->monsterInfo.treasureType, &Dst);
 
-            StatusBarItemFound(foundGold, pItemTable->pItems[Dst.itemId].pUnidentifiedName);
+            StatusBarItemFound(foundGold, pItemTable->items[Dst.itemId].unidentifiedName);
 
             if (!pParty->addItemToParty(&Dst)) {
                 pParty->setHoldingItem(&Dst);

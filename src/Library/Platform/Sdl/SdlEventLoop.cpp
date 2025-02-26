@@ -90,19 +90,19 @@ void SdlEventLoop::dispatchEvent(PlatformEventHandler *eventHandler, const SDL_E
     case SDL_WINDOWEVENT:
         dispatchWindowEvent(eventHandler, &event->window);
         break;
-    case SDL_CONTROLLERDEVICEADDED:
-        dispatchGamepadConnectedEvent(eventHandler, &event->cdevice);
-        break;
-    case SDL_CONTROLLERDEVICEREMOVED:
-        dispatchGamepadDisconnectedEvent(eventHandler, &event->cdevice);
-        break;
-    case SDL_CONTROLLERBUTTONDOWN:
-    case SDL_CONTROLLERBUTTONUP:
-        dispatchGamepadButtonEvent(eventHandler, &event->cbutton);
-        break;
-    case SDL_CONTROLLERAXISMOTION:
-        dispatchGamepadAxisEvent(eventHandler, &event->caxis);
-        break;
+    // case SDL_CONTROLLERDEVICEADDED:
+    //     dispatchGamepadConnectedEvent(eventHandler, &event->cdevice);
+    //     break;
+    // case SDL_CONTROLLERDEVICEREMOVED:
+    //     dispatchGamepadDisconnectedEvent(eventHandler, &event->cdevice);
+    //     break;
+    // case SDL_CONTROLLERBUTTONDOWN:
+    // case SDL_CONTROLLERBUTTONUP:
+    //     dispatchGamepadButtonEvent(eventHandler, &event->cbutton);
+    //     break;
+    // case SDL_CONTROLLERAXISMOTION:
+    //     dispatchGamepadAxisEvent(eventHandler, &event->caxis);
+    //     break;
     case SDL_TEXTINPUT:
         dispatchTextInputEvent(eventHandler, &event->text);
         break;

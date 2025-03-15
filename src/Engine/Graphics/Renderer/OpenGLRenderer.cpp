@@ -54,7 +54,7 @@
 #include "OpenGLShader.h"
 
 #include "Utility/Memory/Blob.h"
-#include "Library/Image/PCX.h"
+#include "Library/Image/Pcx.h"
 #include <SDL2/SDL_mouse.h>
 
 #ifndef LOWORD
